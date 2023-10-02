@@ -1,13 +1,22 @@
 import sys
 import re
-from scapy.all import *
+import scapy.all
+from ruamel.yaml import YAML
+import binascii
+def analyzePackets():
+    packetList = scapy.all.rdpcap("test.pcap")
 
-packetList = rdpcap("test.pcap")
+    packetOrder = 0
 
-packet = packetList[1]
+    for packet in packetList:
+        prettyPacket = binascii.hexlify(scapy.all.raw(packet)).decode()
 
-print(packet)
+        packetOrder = packetOrder + 1
+        print(prettyPacket)
 
-print( hexdump(packet) )
+    with open("output.yaml","w") as file:
+        yaml = YAML()
+        yaml.dump(prettyPacket,file)
 
-packet.show()
+
+analyzePackets()
