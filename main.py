@@ -9,3 +9,5 @@ packet = packetList[1]
 print(packet)
 
 print( hexdump(packet) )
+
+packet.show()
