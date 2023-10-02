@@ -69,7 +69,6 @@ def get_hexa_frame(pretty_packet):
 
 def get_frame_type(pretty_packet):
     frame_type_hex = pretty_packet[24:28]
-    print(frame_type_hex)
     frame_type_decimal = int(frame_type_hex, 16)
 
     if frame_type_decimal > 1500:
@@ -111,7 +110,7 @@ def get_pid(pretty_packet):
 
 
 def analyze_packets():
-    packet_list = scapy.all.rdpcap("test_files/rpvstp-trunk-native-vid1.pcap.cap")
+    packet_list = scapy.all.rdpcap("test_pcap_files/vzorky_pcap_na_analyzu/eth-1.pcap")
 
     packets = []
 
@@ -137,6 +136,7 @@ def analyze_packets():
     with open("output.yaml", "w") as file:
         yaml = YAML()
         yaml.dump(packets, file)
+    print("\nDone, check output.yaml")
 
 
 analyze_packets()
