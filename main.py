@@ -83,36 +83,82 @@ def get_frame_type(pretty_packet):
     return frame_type
 
 
-def get_sap(pretty_packet):
+def get_sap(pretty_packet, protocols):
     sap_bytes = pretty_packet[28:32]
-    if sap_bytes == "4242":
-        return "STP"
-    elif sap_bytes == "F0F0":
-        return "NETBIOS"
-    elif sap_bytes == "E0E0":
-        return "IPX"
-    else:
-        return "Unknown"
+
+    for sap_type, sap_value in protocols["sap"].items():
+        if sap_type == sap_bytes:
+            return sap_value
 
 
-def get_pid(pretty_packet):
-    pid_bytes = pretty_packet[28:32]
-    if pid_bytes == "089B":
-        return "AppleTalk"
-    elif pid_bytes == "2000":
-        return "CDP"
-    elif pid_bytes == "2004":
-        return "DTP"
-    elif pid_bytes == "010B":
-        return "PVSTP+"
-    else:
-        return "Unknown"
+def get_pid(pretty_packet, protocols):
+    pid_bytes = pretty_packet[40:44]
+
+    for pid_type, pid_value in protocols["pid"].items():
+        if pid_type == pid_bytes:
+            return pid_value
+
+
+def get_ether_type(pretty_packet, protocols):
+    ether_type_bytes = pretty_packet[24:28]
+
+    for ether_type, ether_type_value in protocols["ether_type"].items():
+        if ether_type == ether_type_bytes:
+            return ether_type_value
+
+
+def get_source_ip_address(pretty_packet):
+    source_ip_bytes = []
+    for i in range(0, 4):
+        source_ip_bytes.append(int(pretty_packet[52+(i*2):54+(i*2)], 16))
+
+    source_ip_address = ""
+    for byte in source_ip_bytes:
+        source_ip_address = source_ip_address + str(byte) + "."
+
+    source_ip_address = source_ip_address[:-1]
+    return source_ip_address
+
+
+def get_destination_ip_address(pretty_packet):
+    destination_ip_bytes = []
+    for i in range(0, 4):
+        destination_ip_bytes.append(int(pretty_packet[60+(i*2):62+(i*2)], 16))
+
+    destination_ip_address = ""
+    for byte in destination_ip_bytes:
+        destination_ip_address = destination_ip_address + str(byte) + "."
+
+    destination_ip_address = destination_ip_address[:-1]
+    return destination_ip_address
+
+
+def get_ipv4_protocol(pretty_packet, protocols)
+
+
+def analyze_file(file_name):  # chata sesh
+    protocols = {}
+    with open(file_name, 'r') as file:
+        lines = file.readlines()
+        current_key = None
+        for line in lines:
+            if line.strip() and not line.startswith("  "):
+                # This line contains a new section identifier
+                current_key = line.strip()[:-1]  # Remove the trailing colon
+                protocols[current_key] = {}
+            elif line.startswith("  ") and current_key:
+                # This line contains a mapping for the current section
+                key, value = map(str.strip, line.strip().split(":"))
+                protocols[current_key][key] = value
+    return protocols
 
 
 def analyze_packets():
-    packet_list = scapy.all.rdpcap("test_pcap_files/vzorky_pcap_na_analyzu/eth-1.pcap")
+    packet_list = scapy.all.rdpcap("test_pcap_files/vzorky_pcap_na_analyzu/trace-26.pcap")
 
     packets = []
+
+    protocols = analyze_file("protocols.txt")
 
     for current_packet_number in range(0, len(packet_list)):
         packet = packet_list[current_packet_number]
@@ -124,11 +170,22 @@ def analyze_packets():
             ('medium_length', get_medium_length(get_pcap_length(pretty_packet))),
             ('frame_type',  get_frame_type(pretty_packet)),
             ('source_mac', get_source_address(pretty_packet)),
-            ('destination_mac', get_destination_address(pretty_packet)),
-            ('sap', get_sap(pretty_packet)),
-            ('pid', get_pid(pretty_packet)),
-            ('hexa_frame', get_hexa_frame(pretty_packet))
+            ('destination_mac', get_destination_address(pretty_packet))
         ]
+
+        if get_frame_type(pretty_packet) == "ETHERNET II":
+            current_packet_data.append(('ether_type', get_ether_type(pretty_packet, protocols)))
+            if get_ether_type(pretty_packet, protocols) == "IPv4":
+                current_packet_data.append(('src_ip', get_source_ip_address(pretty_packet)))
+                current_packet_data.append(('dst_ip', get_destination_ip_address(pretty_packet)))
+
+        elif get_frame_type(pretty_packet) == "IEEE 802.3 LLC":
+            current_packet_data.append(('sap', get_sap(pretty_packet, protocols)))
+
+        elif get_frame_type(pretty_packet) == "IEEE 802.3 LLC & SNAP":
+            current_packet_data.append(('pid', get_pid(pretty_packet, protocols)))
+
+        current_packet_data.append(('hexa_frame', get_hexa_frame(pretty_packet)))
 
         current_data = dict(current_packet_data)
         packets.append(current_data)
