@@ -127,6 +127,9 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.252
+  protocol: UDP
+  src_port: 54684
+  dst_port: 5355
   hexa_frame: |-
     01 00 5E 00 00 FC 00 10 18 33 CF 44 08 00 45 00
     00 37 04 46 00 00 01 11 AC 5F 0A 14 1E 01 E0 00
@@ -142,6 +145,9 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.252
+  protocol: UDP
+  src_port: 54684
+  dst_port: 5355
   hexa_frame: |-
     01 00 5E 00 00 FC 00 10 18 33 CF 44 08 00 45 00
     00 37 04 47 00 00 01 11 AC 5E 0A 14 1E 01 E0 00
@@ -157,6 +163,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 48 00 00 80 11 E5 2F 0A 14 1E 01 0A 14
@@ -173,6 +183,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 49 00 00 80 11 E5 2E 0A 14 1E 01 0A 14
@@ -201,6 +215,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 4A 00 00 80 11 E5 2D 0A 14 1E 01 0A 14
@@ -265,10 +283,10 @@
 - frame_number: 17
   pcap_length: 60
   medium_length: 64
-  frame_type: IEEE 802.3 LLC
+  frame_type: IEEE 802.3 LLC & SNAP
   source_mac: 00:16:47:02:24:1A
   destination_mac: 01:00:0C:CC:CC:CC
-  sap:
+  pid: DTP
   hexa_frame: |-
     01 00 0C CC CC CC 00 16 47 02 24 1A 00 22 AA AA
     03 00 00 0C 20 04 01 00 01 00 05 00 00 02 00 05
@@ -277,10 +295,10 @@
 - frame_number: 18
   pcap_length: 90
   medium_length: 94
-  frame_type: IEEE 802.3 LLC
+  frame_type: IEEE 802.3 LLC & SNAP
   source_mac: 00:16:47:02:24:1A
   destination_mac: 01:00:0C:00:00:00
-  sap:
+  pid:
   hexa_frame: |-
     01 00 0C 00 00 00 00 16 47 02 24 1A 00 4C AA AA
     03 00 00 0C 00 03 00 00 00 00 01 00 0C CC CC CC
@@ -405,6 +423,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 45 04 4B 00 00 FF 11 AE 4C 0A 14 1E 01 E0 00
@@ -499,6 +521,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 ED 04 4C 00 00 FF 11 AD A3 0A 14 1E 01 E0 00
@@ -561,10 +587,10 @@
 - frame_number: 34
   pcap_length: 449
   medium_length: 453
-  frame_type: IEEE 802.3 LLC
+  frame_type: IEEE 802.3 LLC & SNAP
   source_mac: 00:16:47:02:24:1A
   destination_mac: 01:00:0C:CC:CC:CC
-  sap:
+  pid: CDP
   hexa_frame: |-
     01 00 0C CC CC CC 00 16 47 02 24 1A 01 B3 AA AA
     03 00 00 0C 20 00 02 B4 DF A3 00 01 00 0A 53 77
@@ -717,6 +743,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     05 DC 04 4D 20 00 80 01 00 00 0A 14 1E 01 0A 14
@@ -822,6 +849,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     04 54 04 4D 00 B9 80 01 00 00 0A 14 1E 01 0A 14
@@ -903,6 +931,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     05 DC 04 4D 20 00 FF 01 40 AD 0A 14 1E FE 0A 14
@@ -1008,6 +1037,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     04 54 04 4D 00 B9 FF 01 61 7C 0A 14 1E FE 0A 14
@@ -1089,6 +1119,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     05 DC 04 4E 20 00 80 01 00 00 0A 14 1E 01 0A 14
@@ -1194,6 +1225,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     04 54 04 4E 00 B9 80 01 00 00 0A 14 1E 01 0A 14
@@ -1275,6 +1307,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     05 DC 04 4E 20 00 FF 01 40 AC 0A 14 1E FE 0A 14
@@ -1380,6 +1413,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     04 54 04 4E 00 B9 FF 01 61 7B 0A 14 1E FE 0A 14
@@ -1473,6 +1507,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     05 DC 04 4F 20 00 80 01 00 00 0A 14 1E 01 0A 14
@@ -1578,6 +1613,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     04 54 04 4F 00 B9 80 01 00 00 0A 14 1E 01 0A 14
@@ -1659,6 +1695,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     05 DC 04 4F 20 00 FF 01 40 AB 0A 14 1E FE 0A 14
@@ -1764,6 +1801,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     04 54 04 4F 00 B9 FF 01 61 7A 0A 14 1E FE 0A 14
@@ -1845,6 +1883,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     05 DC 04 50 20 00 80 01 00 00 0A 14 1E 01 0A 14
@@ -1950,6 +1989,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     04 54 04 50 00 B9 80 01 00 00 0A 14 1E 01 0A 14
@@ -2031,6 +2071,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     05 DC 04 50 20 00 FF 01 40 AA 0A 14 1E FE 0A 14
@@ -2136,6 +2177,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     04 54 04 50 00 B9 FF 01 61 79 0A 14 1E FE 0A 14
@@ -2217,6 +2259,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 138
+  dst_port: 138
+  app_protocol: NETBIOS-DGM
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 ED 04 51 00 00 80 11 E4 87 0A 14 1E 01 0A 14
@@ -2285,6 +2331,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     05 DC 04 52 20 00 80 01 00 00 0A 14 1E 01 0A 14
@@ -2390,6 +2437,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     04 54 04 52 00 B9 80 01 00 00 0A 14 1E 01 0A 14
@@ -2471,6 +2519,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     05 DC 04 52 20 00 FF 01 40 A8 0A 14 1E FE 0A 14
@@ -2576,6 +2625,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     04 54 04 52 00 B9 FF 01 61 77 0A 14 1E FE 0A 14
@@ -2657,6 +2707,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     05 DC 04 53 20 00 80 01 00 00 0A 14 1E 01 0A 14
@@ -2762,6 +2813,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     04 54 04 53 00 B9 80 01 00 00 0A 14 1E 01 0A 14
@@ -2843,6 +2895,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     05 DC 04 53 20 00 FF 01 40 A7 0A 14 1E FE 0A 14
@@ -2948,6 +3001,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     04 54 04 53 00 B9 FF 01 61 76 0A 14 1E FE 0A 14
@@ -3041,6 +3095,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     05 DC 04 54 20 00 80 01 00 00 0A 14 1E 01 0A 14
@@ -3146,6 +3201,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     04 54 04 54 00 B9 80 01 00 00 0A 14 1E 01 0A 14
@@ -3227,6 +3283,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     05 DC 04 54 20 00 FF 01 40 A6 0A 14 1E FE 0A 14
@@ -3332,6 +3389,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     04 54 04 54 00 B9 FF 01 61 75 0A 14 1E FE 0A 14
@@ -3425,6 +3483,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     05 DC 04 55 20 00 80 01 00 00 0A 14 1E 01 0A 14
@@ -3530,6 +3589,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     04 54 04 55 00 B9 80 01 00 00 0A 14 1E 01 0A 14
@@ -3611,6 +3671,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     05 DC 04 55 20 00 FF 01 40 A5 0A 14 1E FE 0A 14
@@ -3716,6 +3777,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     04 54 04 55 00 B9 FF 01 61 74 0A 14 1E FE 0A 14
@@ -3791,10 +3853,10 @@
 - frame_number: 81
   pcap_length: 60
   medium_length: 64
-  frame_type: IEEE 802.3 LLC
+  frame_type: IEEE 802.3 LLC & SNAP
   source_mac: 00:16:47:02:24:1A
   destination_mac: 01:00:0C:CC:CC:CC
-  sap:
+  pid: DTP
   hexa_frame: |-
     01 00 0C CC CC CC 00 16 47 02 24 1A 00 22 AA AA
     03 00 00 0C 20 04 01 00 01 00 05 00 00 02 00 05
@@ -3803,10 +3865,10 @@
 - frame_number: 82
   pcap_length: 90
   medium_length: 94
-  frame_type: IEEE 802.3 LLC
+  frame_type: IEEE 802.3 LLC & SNAP
   source_mac: 00:16:47:02:24:1A
   destination_mac: 01:00:0C:00:00:00
-  sap:
+  pid:
   hexa_frame: |-
     01 00 0C 00 00 00 00 16 47 02 24 1A 00 4C AA AA
     03 00 00 0C 00 03 00 00 00 00 01 00 0C CC CC CC
@@ -3835,6 +3897,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     05 DC 04 56 20 00 80 01 00 00 0A 14 1E 01 0A 14
@@ -3940,6 +4003,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     04 54 04 56 00 B9 80 01 00 00 0A 14 1E 01 0A 14
@@ -4021,6 +4085,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     05 DC 04 56 20 00 FF 01 40 A4 0A 14 1E FE 0A 14
@@ -4126,6 +4191,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     04 54 04 56 00 B9 FF 01 61 73 0A 14 1E FE 0A 14
@@ -4237,6 +4303,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     05 DC 04 57 20 00 80 01 00 00 0A 14 1E 01 0A 14
@@ -4342,6 +4409,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.254
+  protocol: ICMP
   hexa_frame: |-
     00 16 47 02 24 40 00 10 18 33 CF 44 08 00 45 00
     04 54 04 57 00 B9 80 01 00 00 0A 14 1E 01 0A 14
@@ -4423,6 +4491,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     05 DC 04 57 20 00 FF 01 40 A3 0A 14 1E FE 0A 14
@@ -4528,6 +4597,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.254
   dst_ip: 10.20.30.1
+  protocol: ICMP
   hexa_frame: |-
     00 10 18 33 CF 44 00 16 47 02 24 40 08 00 45 00
     04 54 04 57 00 B9 FF 01 61 72 0A 14 1E FE 0A 14
@@ -4609,6 +4679,10 @@
   ether_type: IPv4
   src_ip: 0.0.0.0
   dst_ip: 255.255.255.255
+  protocol: UDP
+  src_port: 68
+  dst_port: 67
+  app_protocol: DHCP
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     01 4E 04 62 00 00 80 11 35 3E 00 00 00 00 FF FF
@@ -4685,6 +4759,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.22
+  protocol: IGMP
   hexa_frame: |-
     01 00 5E 00 00 16 00 10 18 33 CF 44 08 00 46 00
     00 28 04 64 00 00 01 02 00 00 0A 14 1E 01 E0 00
@@ -4699,6 +4774,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.22
+  protocol: IGMP
   hexa_frame: |-
     01 00 5E 00 00 16 00 10 18 33 CF 44 08 00 46 00
     00 28 04 65 00 00 01 02 00 00 0A 14 1E 01 E0 00
@@ -4713,6 +4789,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 A1 04 66 00 00 01 11 9C D7 0A 14 1E 01 EF FF
@@ -4734,6 +4814,9 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.252
+  protocol: UDP
+  src_port: 59897
+  dst_port: 5355
   hexa_frame: |-
     01 00 5E 00 00 FC 00 10 18 33 CF 44 08 00 45 00
     00 34 04 67 00 00 01 11 AC 41 0A 14 1E 01 E0 00
@@ -4749,6 +4832,9 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.252
+  protocol: UDP
+  src_port: 59897
+  dst_port: 5355
   hexa_frame: |-
     01 00 5E 00 00 FC 00 10 18 33 CF 44 08 00 45 00
     00 34 04 68 00 00 01 11 AC 40 0A 14 1E 01 E0 00
@@ -4776,6 +4862,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.22
+  protocol: IGMP
   hexa_frame: |-
     01 00 5E 00 00 16 00 10 18 33 CF 44 08 00 46 00
     00 30 04 69 00 00 01 02 00 00 0A 14 1E 01 E0 00
@@ -4784,10 +4871,10 @@
 - frame_number: 105
   pcap_length: 431
   medium_length: 435
-  frame_type: IEEE 802.3 LLC
+  frame_type: IEEE 802.3 LLC & SNAP
   source_mac: 00:16:47:02:24:1A
   destination_mac: 01:00:0C:CC:CC:CC
-  sap:
+  pid: CDP
   hexa_frame: |-
     01 00 0C CC CC CC 00 16 47 02 24 1A 01 A1 AA AA
     03 00 00 0C 20 00 02 B4 D5 DE 00 01 00 0A 53 77
@@ -4859,6 +4946,10 @@
   ether_type: IPv4
   src_ip: 0.0.0.0
   dst_ip: 255.255.255.255
+  protocol: UDP
+  src_port: 68
+  dst_port: 67
+  app_protocol: DHCP
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     01 4E 04 6A 00 00 80 11 35 36 00 00 00 00 FF FF
@@ -4902,6 +4993,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.22
+  protocol: IGMP
   hexa_frame: |-
     01 00 5E 00 00 16 00 10 18 33 CF 44 08 00 46 00
     00 28 04 6C 00 00 01 02 00 00 0A 14 1E 01 E0 00
@@ -4927,6 +5019,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.22
+  protocol: IGMP
   hexa_frame: |-
     01 00 5E 00 00 16 00 10 18 33 CF 44 08 00 46 00
     00 28 04 6E 00 00 01 02 00 00 0A 14 1E 01 E0 00
@@ -4952,6 +5045,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 6F 00 00 80 11 E4 F6 0A 14 1E 01 0A 14
@@ -4969,6 +5066,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 70 00 00 80 11 E4 F5 0A 14 1E 01 0A 14
@@ -4986,6 +5087,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 71 00 00 80 11 E4 F4 0A 14 1E 01 0A 14
@@ -5003,6 +5108,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.22
+  protocol: IGMP
   hexa_frame: |-
     01 00 5E 00 00 16 00 10 18 33 CF 44 08 00 46 00
     00 28 04 73 00 00 01 02 00 00 0A 14 1E 01 E0 00
@@ -5029,6 +5135,9 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.252
+  protocol: UDP
+  src_port: 62631
+  dst_port: 5355
   hexa_frame: |-
     01 00 5E 00 00 FC 00 10 18 33 CF 44 08 00 45 00
     00 34 04 74 00 00 01 11 AC 34 0A 14 1E 01 E0 00
@@ -5044,6 +5153,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 75 00 00 80 11 E4 F0 0A 14 1E 01 0A 14
@@ -5061,6 +5174,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 76 00 00 80 11 E4 EF 0A 14 1E 01 0A 14
@@ -5078,6 +5195,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 77 00 00 80 11 E4 EE 0A 14 1E 01 0A 14
@@ -5095,6 +5216,9 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.252
+  protocol: UDP
+  src_port: 62631
+  dst_port: 5355
   hexa_frame: |-
     01 00 5E 00 00 FC 00 10 18 33 CF 44 08 00 45 00
     00 34 04 78 00 00 01 11 AC 30 0A 14 1E 01 E0 00
@@ -5121,6 +5245,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 7A 00 00 80 11 E4 FD 0A 14 1E 01 0A 14
@@ -5137,6 +5265,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 A1 04 7B 00 00 01 11 9C C2 0A 14 1E 01 EF FF
@@ -5158,6 +5290,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 97 04 7C 00 00 01 11 9C CB 0A 14 1E 01 EF FF
@@ -5179,6 +5315,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 99 04 7D 00 00 01 11 9C C8 0A 14 1E 01 EF FF
@@ -5200,6 +5340,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 A1 04 7E 00 00 01 11 9C BF 0A 14 1E 01 EF FF
@@ -5221,6 +5365,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 7F 00 00 80 11 E4 E6 0A 14 1E 01 0A 14
@@ -5238,6 +5386,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 80 00 00 80 11 E4 E5 0A 14 1E 01 0A 14
@@ -5255,6 +5407,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 81 00 00 80 11 E4 E4 0A 14 1E 01 0A 14
@@ -5272,6 +5428,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 82 00 00 80 11 E4 F5 0A 14 1E 01 0A 14
@@ -5299,6 +5459,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.22
+  protocol: IGMP
   hexa_frame: |-
     01 00 5E 00 00 16 00 10 18 33 CF 44 08 00 46 00
     00 28 04 83 00 00 01 02 00 00 0A 14 1E 01 E0 00
@@ -5313,6 +5474,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 A1 04 84 00 00 01 11 9C B9 0A 14 1E 01 EF FF
@@ -5334,6 +5499,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 45 04 85 00 00 FF 11 AE 12 0A 14 1E 01 E0 00
@@ -5350,6 +5519,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 86 00 00 80 11 E4 DF 0A 14 1E 01 0A 14
@@ -5367,6 +5540,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 87 00 00 80 11 E4 DE 0A 14 1E 01 0A 14
@@ -5384,6 +5561,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 88 00 00 80 11 E4 DD 0A 14 1E 01 0A 14
@@ -5401,6 +5582,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 6E 04 89 00 00 FF 11 AD E5 0A 14 1E 01 E0 00
@@ -5419,6 +5604,7 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.22
+  protocol: IGMP
   hexa_frame: |-
     01 00 5E 00 00 16 00 10 18 33 CF 44 08 00 46 00
     00 28 04 8A 00 00 01 02 00 00 0A 14 1E 01 E0 00
@@ -5433,6 +5619,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 8B 00 00 80 11 E4 EC 0A 14 1E 01 0A 14
@@ -5449,6 +5639,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 6E 04 8C 00 00 FF 11 AD E2 0A 14 1E 01 E0 00
@@ -5479,6 +5673,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 6E 04 8D 00 00 FF 11 AD E1 0A 14 1E 01 E0 00
@@ -5519,6 +5717,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 90 00 00 80 11 E4 D5 0A 14 1E 01 0A 14
@@ -5536,6 +5738,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 ED 04 91 00 00 FF 11 AD 5E 0A 14 1E 01 E0 00
@@ -5562,6 +5768,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 45 04 92 00 00 FF 11 AE 05 0A 14 1E 01 E0 00
@@ -5578,6 +5788,9 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.252
+  protocol: UDP
+  src_port: 60092
+  dst_port: 5355
   hexa_frame: |-
     01 00 5E 00 00 FC 00 10 18 33 CF 44 08 00 45 00
     00 34 04 93 00 00 01 11 AC 15 0A 14 1E 01 E0 00
@@ -5593,6 +5806,9 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.252
+  protocol: UDP
+  src_port: 60092
+  dst_port: 5355
   hexa_frame: |-
     01 00 5E 00 00 FC 00 10 18 33 CF 44 08 00 45 00
     00 34 04 94 00 00 01 11 AC 14 0A 14 1E 01 E0 00
@@ -5638,6 +5854,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 96 00 00 80 11 E4 E1 0A 14 1E 01 0A 14
@@ -5654,6 +5874,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 97 00 00 80 11 E4 CE 0A 14 1E 01 0A 14
@@ -5682,6 +5906,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 ED 04 99 00 00 FF 11 AD 56 0A 14 1E 01 E0 00
@@ -5708,6 +5936,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 97 04 9A 00 00 01 11 9C AD 0A 14 1E 01 EF FF
@@ -5729,6 +5961,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 99 04 9B 00 00 01 11 9C AA 0A 14 1E 01 EF FF
@@ -5750,6 +5986,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 9C 00 00 80 11 E4 DB 0A 14 1E 01 0A 14
@@ -5766,6 +6006,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 A1 04 9D 00 00 01 11 9C A0 0A 14 1E 01 EF FF
@@ -5787,6 +6031,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 9E 00 00 80 11 E4 C7 0A 14 1E 01 0A 14
@@ -5827,6 +6075,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 9F 00 00 80 11 E4 D8 0A 14 1E 01 0A 14
@@ -5843,6 +6095,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 A1 04 A0 00 00 01 11 9C 9D 0A 14 1E 01 EF FF
@@ -5864,6 +6120,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 60 04 A1 00 00 80 11 E4 C4 0A 14 1E 01 0A 14
@@ -5881,6 +6141,9 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.252
+  protocol: UDP
+  src_port: 53770
+  dst_port: 5355
   hexa_frame: |-
     01 00 5E 00 00 FC 00 10 18 33 CF 44 08 00 45 00
     00 34 04 A2 00 00 01 11 AC 06 0A 14 1E 01 E0 00
@@ -5890,10 +6153,10 @@
 - frame_number: 171
   pcap_length: 431
   medium_length: 435
-  frame_type: IEEE 802.3 LLC
+  frame_type: IEEE 802.3 LLC & SNAP
   source_mac: 00:16:47:02:24:1A
   destination_mac: 01:00:0C:CC:CC:CC
-  sap:
+  pid: CDP
   hexa_frame: |-
     01 00 0C CC CC CC 00 16 47 02 24 1A 01 A1 AA AA
     03 00 00 0C 20 00 02 B4 D5 DE 00 01 00 0A 53 77
@@ -5931,6 +6194,9 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.252
+  protocol: UDP
+  src_port: 53770
+  dst_port: 5355
   hexa_frame: |-
     01 00 5E 00 00 FC 00 10 18 33 CF 44 08 00 45 00
     00 34 04 A3 00 00 01 11 AC 05 0A 14 1E 01 E0 00
@@ -5946,6 +6212,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 138
+  dst_port: 138
+  app_protocol: NETBIOS-DGM
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 CF 04 A5 00 00 80 11 E4 51 0A 14 1E 01 0A 14
@@ -5970,6 +6240,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 A6 00 00 80 11 E4 D1 0A 14 1E 01 0A 14
@@ -5986,6 +6260,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 ED 04 A7 00 00 FF 11 AD 48 0A 14 1E 01 E0 00
@@ -6012,6 +6290,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 224.0.0.251
+  protocol: UDP
+  src_port: 5353
+  dst_port: 5353
+  app_protocol: MDNS
   hexa_frame: |-
     01 00 5E 00 00 FB 00 10 18 33 CF 44 08 00 45 00
     00 45 04 A8 00 00 FF 11 AD EF 0A 14 1E 01 E0 00
@@ -6034,10 +6316,10 @@
 - frame_number: 178
   pcap_length: 431
   medium_length: 435
-  frame_type: IEEE 802.3 LLC
+  frame_type: IEEE 802.3 LLC & SNAP
   source_mac: 00:16:47:02:24:1A
   destination_mac: 01:00:0C:CC:CC:CC
-  sap:
+  pid: CDP
   hexa_frame: |-
     01 00 0C CC CC CC 00 16 47 02 24 1A 01 A1 AA AA
     03 00 00 0C 20 00 02 B4 D5 DE 00 01 00 0A 53 77
@@ -6075,6 +6357,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 A9 00 00 80 11 E4 CE 0A 14 1E 01 0A 14
@@ -6091,6 +6377,10 @@
   ether_type: IPv4
   src_ip: 0.0.0.0
   dst_ip: 255.255.255.255
+  protocol: UDP
+  src_port: 68
+  dst_port: 67
+  app_protocol: DHCP
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     01 4E 04 AA 00 00 80 11 34 F6 00 00 00 00 FF FF
@@ -6123,6 +6413,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 138
+  dst_port: 138
+  app_protocol: NETBIOS-DGM
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 CF 04 AB 00 00 80 11 E4 4B 0A 14 1E 01 0A 14
@@ -6147,6 +6441,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 10.20.30.255
+  protocol: UDP
+  src_port: 137
+  dst_port: 137
+  app_protocol: NETBIOS-NS
   hexa_frame: |-
     FF FF FF FF FF FF 00 10 18 33 CF 44 08 00 45 00
     00 4E 04 AC 00 00 80 11 E4 CB 0A 14 1E 01 0A 14
@@ -6157,10 +6455,10 @@
 - frame_number: 183
   pcap_length: 431
   medium_length: 435
-  frame_type: IEEE 802.3 LLC
+  frame_type: IEEE 802.3 LLC & SNAP
   source_mac: 00:16:47:02:24:1A
   destination_mac: 01:00:0C:CC:CC:CC
-  sap:
+  pid: CDP
   hexa_frame: |-
     01 00 0C CC CC CC 00 16 47 02 24 1A 01 A1 AA AA
     03 00 00 0C 20 00 02 B4 D5 DE 00 01 00 0A 53 77
@@ -6198,6 +6496,10 @@
   ether_type: IPv4
   src_ip: 10.20.30.1
   dst_ip: 239.255.255.250
+  protocol: UDP
+  src_port: 61752
+  dst_port: 1900
+  app_protocol: SSDP
   hexa_frame: |-
     01 00 5E 7F FF FA 00 10 18 33 CF 44 08 00 45 00
     00 A1 04 AD 00 00 01 11 9C 90 0A 14 1E 01 EF FF
@@ -6210,3 +6512,13 @@
     74 47 61 74 65 77 61 79 44 65 76 69 63 65 3A 31
     0D 0A 4D 61 6E 3A 22 73 73 64 70 3A 64 69 73 63
     6F 76 65 72 22 0D 0A 4D 58 3A 33 0D 0A 0D 0A
+ipv4_senders:
+- node: 10.20.30.1
+  number_of_sent_packets: 91
+- node: 10.20.30.254
+  number_of_sent_packets: 20
+- node: 0.0.0.0
+  number_of_sent_packets: 3
+max_send_packets_by:
+- ip_addr: 10.20.30.1
+  packets_sent: 91

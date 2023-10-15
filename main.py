@@ -4,6 +4,12 @@ from ruamel.yaml import YAML
 import binascii
 
 
+class UniqueIpSender:
+    def __init__(self, ip_addr, packets_sent):
+        self.ip_addr = ip_addr
+        self.packets_sent = packets_sent
+
+
 def get_destination_address(current_packet):
     initial_destination_address = current_packet[:12]
     final_destination_address = ""
@@ -68,15 +74,15 @@ def get_hexa_frame(pretty_packet):
 
 
 def get_frame_type(pretty_packet):
-    frame_type_hex = pretty_packet[24:28]
-    frame_type_decimal = int(frame_type_hex, 16)
+    frame_type_hex = pretty_packet[28:32]
+    frame_length = int(pretty_packet[24:28], 16)
 
-    if frame_type_decimal > 1500:
+    if frame_length > 1500:
         frame_type = "ETHERNET II"
     elif frame_type_hex == "FFFF":
         frame_type = "Novell 802.3 RAW"
     elif frame_type_hex == "AAAA":
-        frame_type = "IEEE 802.3 LLC + SNAP"
+        frame_type = "IEEE 802.3 LLC & SNAP"
     else:
         frame_type = "IEEE 802.3 LLC"
 
@@ -133,7 +139,33 @@ def get_destination_ip_address(pretty_packet):
     return destination_ip_address
 
 
-def get_ipv4_protocol(pretty_packet, protocols)
+def get_ipv4_protocol(pretty_packet, protocols):
+    protocol_bytes = pretty_packet[46:48]
+
+    for protocol_type, protocol_value in protocols["ipv4_protocol"].items():
+        if protocol_type == protocol_bytes:
+            return protocol_value
+
+
+def get_src_port(pretty_packet):
+    return int(pretty_packet[68:72], 16)
+
+
+def get_dst_port(pretty_packet):
+    return int(pretty_packet[72:76], 16)
+
+
+def is_port_known(src_port, dst_port, protocols, ipv4_protocol):
+    if ipv4_protocol == "TCP":
+        for protocol_type, protocol_value in protocols["tcp_protocol"].items():
+            if str(src_port) == protocol_type or str(dst_port) == protocol_type:
+                return protocol_value
+        return
+    elif ipv4_protocol == "UDP":
+        for protocol_type, protocol_value in protocols["udp_protocol"].items():
+            if str(src_port) == protocol_type or str(dst_port) == protocol_type:
+                return protocol_value
+        return
 
 
 def analyze_file(file_name):  # chata sesh
@@ -158,31 +190,62 @@ def analyze_packets():
 
     packets = []
 
+    unique_senders = []
+
     protocols = analyze_file("protocols.txt")
 
     for current_packet_number in range(0, len(packet_list)):
         packet = packet_list[current_packet_number]
         pretty_packet = binascii.hexlify(scapy.all.raw(packet)).decode()
         pretty_packet = pretty_packet.upper()
+
+        current_frame_type = get_frame_type(pretty_packet)
+
         current_packet_data = [
             ('frame_number', current_packet_number + 1),
             ('pcap_length', get_pcap_length(pretty_packet)),
             ('medium_length', get_medium_length(get_pcap_length(pretty_packet))),
-            ('frame_type',  get_frame_type(pretty_packet)),
+            ('frame_type',  current_frame_type),
             ('source_mac', get_source_address(pretty_packet)),
             ('destination_mac', get_destination_address(pretty_packet))
         ]
 
-        if get_frame_type(pretty_packet) == "ETHERNET II":
-            current_packet_data.append(('ether_type', get_ether_type(pretty_packet, protocols)))
-            if get_ether_type(pretty_packet, protocols) == "IPv4":
-                current_packet_data.append(('src_ip', get_source_ip_address(pretty_packet)))
+        if current_frame_type == "ETHERNET II":
+            current_ether_type = get_ether_type(pretty_packet, protocols)
+            current_packet_data.append(('ether_type', current_ether_type))
+
+            if current_ether_type == "IPv4":
+                current_src_ip = get_source_ip_address(pretty_packet)
+                current_packet_data.append(('src_ip', current_src_ip))
                 current_packet_data.append(('dst_ip', get_destination_ip_address(pretty_packet)))
 
-        elif get_frame_type(pretty_packet) == "IEEE 802.3 LLC":
+                contains = False
+                for sender in unique_senders:
+                    if current_src_ip == sender.ip_addr:
+                        sender.packets_sent += 1
+                        contains = True
+                        break
+                if not contains:
+                    unique_senders.append(UniqueIpSender(current_src_ip, 1))
+
+                current_ipv4_protocol = get_ipv4_protocol(pretty_packet, protocols)
+                current_packet_data.append(('protocol', current_ipv4_protocol))
+
+                if current_ipv4_protocol == "UDP" or current_ipv4_protocol == "TCP":
+                    current_src_port = get_src_port(pretty_packet)
+                    current_dst_port = get_dst_port(pretty_packet)
+
+                    current_packet_data.append(('src_port', current_src_port))
+                    current_packet_data.append(('dst_port', current_dst_port))
+
+                    known_port = is_port_known(current_src_port, current_dst_port, protocols, current_ipv4_protocol)
+                    if known_port:
+                        current_packet_data.append(('app_protocol', known_port))
+
+        elif current_frame_type == "IEEE 802.3 LLC":
             current_packet_data.append(('sap', get_sap(pretty_packet, protocols)))
 
-        elif get_frame_type(pretty_packet) == "IEEE 802.3 LLC & SNAP":
+        elif current_frame_type == "IEEE 802.3 LLC & SNAP":
             current_packet_data.append(('pid', get_pid(pretty_packet, protocols)))
 
         current_packet_data.append(('hexa_frame', get_hexa_frame(pretty_packet)))
@@ -190,9 +253,22 @@ def analyze_packets():
         current_data = dict(current_packet_data)
         packets.append(current_data)
 
+    ipv4_senders = []
+    for sender in unique_senders:
+        ipv4_senders.append({"node": sender.ip_addr, "number_of_sent_packets": sender.packets_sent})
+
+    max_send_packets = []
+    key_function = lambda obj: obj.packets_sent
+    max_packets_sent = max(unique_senders, key=key_function).packets_sent
+    max_objects = [obj for obj in unique_senders if obj.packets_sent == max_packets_sent]
+    for i in max_objects:
+        max_send_packets.append({"ip_addr": i.ip_addr, "packets_sent": i.packets_sent})
+
     with open("output.yaml", "w") as file:
         yaml = YAML()
         yaml.dump(packets, file)
+        yaml.dump({"ipv4_senders": ipv4_senders}, file)
+        yaml.dump({"max_send_packets_by": max_send_packets}, file)
     print("\nDone, check output.yaml")
 
 
