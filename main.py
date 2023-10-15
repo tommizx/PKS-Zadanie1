@@ -155,6 +155,13 @@ def get_dst_port(pretty_packet):
     return int(pretty_packet[72:76], 16)
 
 
+def get_arp_opcode(pretty_packet):
+    if int(pretty_packet[40:44]) == 1:
+        return "REQUEST"
+    else:
+        return "REPLY"
+
+
 def is_port_known(src_port, dst_port, protocols, ipv4_protocol):
     if ipv4_protocol == "TCP":
         for protocol_type, protocol_value in protocols["tcp_protocol"].items():
@@ -186,13 +193,29 @@ def analyze_file(file_name):  # chata sesh
 
 
 def analyze_packets():
-    packet_list = scapy.all.rdpcap("test_pcap_files/vzorky_pcap_na_analyzu/trace-26.pcap")
-
+    packet_list = scapy.all.rdpcap("test_pcap_files/vzorky_pcap_na_analyzu/eth-1.pcap")
     packets = []
-
     unique_senders = []
-
     protocols = analyze_file("protocols.txt")
+    is_valid_filter = False
+    filter_name = ""
+    results_count = 0
+
+    # print("Analyze all packets : 'a'\nFilter by protocol : 'f'\nExit program : 'x'\n")
+    # program_mode = input()
+
+    while not is_valid_filter:
+        print("Enter filter name : ")
+        filter_name = input()  # Get filter name
+
+        for value in protocols["tcp_protocol"].values():  # Check if this protocol exists
+            if filter_name == value:
+                is_valid_filter = True
+                break
+        if not is_valid_filter:
+            print("Not an existing protocol!")
+
+    frame_number = 1
 
     for current_packet_number in range(0, len(packet_list)):
         packet = packet_list[current_packet_number]
@@ -200,9 +223,10 @@ def analyze_packets():
         pretty_packet = pretty_packet.upper()
 
         current_frame_type = get_frame_type(pretty_packet)
+        current_app_protocol = ""
 
         current_packet_data = [
-            ('frame_number', current_packet_number + 1),
+            ('frame_number', frame_number),
             ('pcap_length', get_pcap_length(pretty_packet)),
             ('medium_length', get_medium_length(get_pcap_length(pretty_packet))),
             ('frame_type',  current_frame_type),
@@ -240,7 +264,11 @@ def analyze_packets():
 
                     known_port = is_port_known(current_src_port, current_dst_port, protocols, current_ipv4_protocol)
                     if known_port:
-                        current_packet_data.append(('app_protocol', known_port))
+                        current_app_protocol = known_port
+                        current_packet_data.append(('app_protocol', current_app_protocol))
+                elif current_ether_type == "ARP":
+                    current_arp_opcode = get_arp_opcode(pretty_packet)
+                    current_packet_data.append(('arp_opcode', current_arp_opcode))
 
         elif current_frame_type == "IEEE 802.3 LLC":
             current_packet_data.append(('sap', get_sap(pretty_packet, protocols)))
@@ -249,9 +277,11 @@ def analyze_packets():
             current_packet_data.append(('pid', get_pid(pretty_packet, protocols)))
 
         current_packet_data.append(('hexa_frame', get_hexa_frame(pretty_packet)))
-
         current_data = dict(current_packet_data)
-        packets.append(current_data)
+        if current_app_protocol == filter_name:  # Append packet only if app_protocol is same as filtered protocol
+            packets.append(current_data)
+            frame_number += 1
+            results_count += 1
 
     ipv4_senders = []
     for sender in unique_senders:
@@ -266,9 +296,13 @@ def analyze_packets():
 
     with open("output.yaml", "w") as file:
         yaml = YAML()
-        yaml.dump(packets, file)
-        yaml.dump({"ipv4_senders": ipv4_senders}, file)
-        yaml.dump({"max_send_packets_by": max_send_packets}, file)
+        yaml.dump({"filter_name": filter_name}, file)
+        if results_count > 0:
+            yaml.dump(packets, file)
+            yaml.dump({"ipv4_senders": ipv4_senders}, file)
+            yaml.dump({"max_send_packets_by": max_send_packets}, file)
+        else:
+            yaml.dump("No packets found with this protocol!", file)
     print("\nDone, check output.yaml")
 
 
