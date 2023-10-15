@@ -113,10 +113,15 @@ def get_ether_type(pretty_packet, protocols):
             return ether_type_value
 
 
-def get_source_ip_address(pretty_packet):
+def get_source_ip_address(pretty_packet, is_arp):
     source_ip_bytes = []
-    for i in range(0, 4):
-        source_ip_bytes.append(int(pretty_packet[52+(i*2):54+(i*2)], 16))
+
+    if not is_arp:
+        for i in range(0, 4):
+            source_ip_bytes.append(int(pretty_packet[52+(i*2):54+(i*2)], 16))
+    elif is_arp:
+        for i in range(0, 4):
+            source_ip_bytes.append(int(pretty_packet[56+(i*2):58+(i*2)], 16))
 
     source_ip_address = ""
     for byte in source_ip_bytes:
@@ -126,10 +131,15 @@ def get_source_ip_address(pretty_packet):
     return source_ip_address
 
 
-def get_destination_ip_address(pretty_packet):
+def get_destination_ip_address(pretty_packet, is_arp):
     destination_ip_bytes = []
-    for i in range(0, 4):
-        destination_ip_bytes.append(int(pretty_packet[60+(i*2):62+(i*2)], 16))
+
+    if not is_arp:
+        for i in range(0, 4):
+            destination_ip_bytes.append(int(pretty_packet[60+(i*2):62+(i*2)], 16))
+    elif is_arp:
+        for i in range(0, 4):
+            destination_ip_bytes.append(int(pretty_packet[76+(i*2):78+(i*2)], 16))
 
     destination_ip_address = ""
     for byte in destination_ip_bytes:
@@ -162,6 +172,41 @@ def get_arp_opcode(pretty_packet):
         return "REPLY"
 
 
+def get_active_flags(pretty_packet):
+    ihl_bytes = pretty_packet[29:30]
+    ip_header_length = int(ihl_bytes) * 4
+    flag_bytes = (ip_header_length * 2)+53
+    flags = pretty_packet[flag_bytes:flag_bytes+3]
+    flags = int(flags, 16)
+    flags = bin(flags)[2:]
+
+    if len(flags) < 5:
+        temp_flags = flags
+        missing_length = 5 - len(flags)
+
+        flags = ""
+
+        for i in range(0, missing_length):
+            flags = flags + "0"
+
+        flags = flags + temp_flags
+
+    list_of_active_flags = []
+
+    if flags[0] == "1":
+        list_of_active_flags.append("ACK")
+    if flags[1] == "1":
+        list_of_active_flags.append("PSH")
+    if flags[2] == "1":
+        list_of_active_flags.append("RST")
+    if flags[3] == "1":
+        list_of_active_flags.append("SYN")
+    if flags[4] == "1":
+        list_of_active_flags.append("FIN")
+
+    return list_of_active_flags
+
+
 def is_port_known(src_port, dst_port, protocols, ipv4_protocol):
     if ipv4_protocol == "TCP":
         for protocol_type, protocol_value in protocols["tcp_protocol"].items():
@@ -181,7 +226,7 @@ def analyze_file(file_name):  # chata sesh
         lines = file.readlines()
         current_key = None
         for line in lines:
-            if line.strip() and not line.startswith("  "):
+            if line.strip() and not line.startswith(" "):
                 # This line contains a new section identifier
                 current_key = line.strip()[:-1]  # Remove the trailing colon
                 protocols[current_key] = {}
@@ -193,117 +238,137 @@ def analyze_file(file_name):  # chata sesh
 
 
 def analyze_packets():
-    packet_list = scapy.all.rdpcap("test_pcap_files/vzorky_pcap_na_analyzu/eth-1.pcap")
-    packets = []
-    unique_senders = []
-    protocols = analyze_file("protocols.txt")
-    is_valid_filter = False
-    filter_name = ""
-    results_count = 0
+    program_mode = ""
 
-    # print("Analyze all packets : 'a'\nFilter by protocol : 'f'\nExit program : 'x'\n")
-    # program_mode = input()
+    while program_mode != "x":
+        packet_list = scapy.all.rdpcap("test_pcap_files/vzorky_pcap_na_analyzu/eth-4.pcap")  # Change file
+        packets = []
+        unique_senders = []
+        protocols = analyze_file("protocols.txt")
+        is_valid_filter = False
+        filter_name = ""
+        results_count = 0
 
-    while not is_valid_filter:
-        print("Enter filter name : ")
-        filter_name = input()  # Get filter name
+        print("Analyze all packets : 'a'\nFilter by protocol : 'f'\nExit program : 'x'\n")
+        program_mode = input()
 
-        for value in protocols["tcp_protocol"].values():  # Check if this protocol exists
-            if filter_name == value:
-                is_valid_filter = True
-                break
-        if not is_valid_filter:
-            print("Not an existing protocol!")
+        if program_mode == "x":  # Check for Exit program
+            exit()
 
-    frame_number = 1
+        if program_mode == "f":
+            while not is_valid_filter:
+                print("Enter filter name : ")
+                filter_name = input()  # Get filter name
 
-    for current_packet_number in range(0, len(packet_list)):
-        packet = packet_list[current_packet_number]
-        pretty_packet = binascii.hexlify(scapy.all.raw(packet)).decode()
-        pretty_packet = pretty_packet.upper()
-
-        current_frame_type = get_frame_type(pretty_packet)
-        current_app_protocol = ""
-
-        current_packet_data = [
-            ('frame_number', frame_number),
-            ('pcap_length', get_pcap_length(pretty_packet)),
-            ('medium_length', get_medium_length(get_pcap_length(pretty_packet))),
-            ('frame_type',  current_frame_type),
-            ('source_mac', get_source_address(pretty_packet)),
-            ('destination_mac', get_destination_address(pretty_packet))
-        ]
-
-        if current_frame_type == "ETHERNET II":
-            current_ether_type = get_ether_type(pretty_packet, protocols)
-            current_packet_data.append(('ether_type', current_ether_type))
-
-            if current_ether_type == "IPv4":
-                current_src_ip = get_source_ip_address(pretty_packet)
-                current_packet_data.append(('src_ip', current_src_ip))
-                current_packet_data.append(('dst_ip', get_destination_ip_address(pretty_packet)))
-
-                contains = False
-                for sender in unique_senders:
-                    if current_src_ip == sender.ip_addr:
-                        sender.packets_sent += 1
-                        contains = True
+                for value in protocols["tcp_protocol"].values():  # Check if this protocol exists
+                    if filter_name == value:
+                        is_valid_filter = True
                         break
-                if not contains:
-                    unique_senders.append(UniqueIpSender(current_src_ip, 1))
+                if not is_valid_filter:
+                    print("Not an existing protocol!")
 
-                current_ipv4_protocol = get_ipv4_protocol(pretty_packet, protocols)
-                current_packet_data.append(('protocol', current_ipv4_protocol))
+        frame_number = 1
 
-                if current_ipv4_protocol == "UDP" or current_ipv4_protocol == "TCP":
-                    current_src_port = get_src_port(pretty_packet)
-                    current_dst_port = get_dst_port(pretty_packet)
+        for current_packet_number in range(0, len(packet_list)):
+            packet = packet_list[current_packet_number]
+            pretty_packet = binascii.hexlify(scapy.all.raw(packet)).decode()
+            pretty_packet = pretty_packet.upper()
 
-                    current_packet_data.append(('src_port', current_src_port))
-                    current_packet_data.append(('dst_port', current_dst_port))
+            current_frame_type = get_frame_type(pretty_packet)
+            current_app_protocol = ""
 
-                    known_port = is_port_known(current_src_port, current_dst_port, protocols, current_ipv4_protocol)
-                    if known_port:
-                        current_app_protocol = known_port
-                        current_packet_data.append(('app_protocol', current_app_protocol))
+            current_packet_data = [
+                ('frame_number', frame_number),
+                ('pcap_length', get_pcap_length(pretty_packet)),
+                ('medium_length', get_medium_length(get_pcap_length(pretty_packet))),
+                ('frame_type',  current_frame_type),
+                ('source_mac', get_source_address(pretty_packet)),
+                ('destination_mac', get_destination_address(pretty_packet))
+            ]
+
+            if current_frame_type == "ETHERNET II":
+                current_ether_type = get_ether_type(pretty_packet, protocols)
+                current_packet_data.append(('ether_type', current_ether_type))
+
+                if current_ether_type == "IPv4":
+                    current_src_ip = get_source_ip_address(pretty_packet, False)
+                    current_packet_data.append(('src_ip', current_src_ip))
+                    current_packet_data.append(('dst_ip', get_destination_ip_address(pretty_packet, False)))
+
+                    contains = False
+                    for sender in unique_senders:
+                        if current_src_ip == sender.ip_addr:
+                            sender.packets_sent += 1
+                            contains = True
+                            break
+                    if not contains:
+                        unique_senders.append(UniqueIpSender(current_src_ip, 1))
+
+                    current_ipv4_protocol = get_ipv4_protocol(pretty_packet, protocols)
+                    current_packet_data.append(('protocol', current_ipv4_protocol))
+
+                    if current_ipv4_protocol == "UDP" or current_ipv4_protocol == "TCP":
+                        current_src_port = get_src_port(pretty_packet)
+                        current_dst_port = get_dst_port(pretty_packet)
+
+                        current_packet_data.append(('src_port', current_src_port))
+                        current_packet_data.append(('dst_port', current_dst_port))
+
+                        known_port = is_port_known(current_src_port, current_dst_port, protocols, current_ipv4_protocol)
+                        if known_port:
+                            current_app_protocol = known_port
+                            current_packet_data.append(('app_protocol', current_app_protocol))
+
+                        if current_ipv4_protocol == "TCP":  # Flags
+                            print(get_active_flags(pretty_packet))
+
                 elif current_ether_type == "ARP":
                     current_arp_opcode = get_arp_opcode(pretty_packet)
                     current_packet_data.append(('arp_opcode', current_arp_opcode))
+                    current_packet_data.append(('src_ip', get_source_ip_address(pretty_packet, True)))
+                    current_packet_data.append(('dst_ip', get_destination_ip_address(pretty_packet, True)))
 
-        elif current_frame_type == "IEEE 802.3 LLC":
-            current_packet_data.append(('sap', get_sap(pretty_packet, protocols)))
+            elif current_frame_type == "IEEE 802.3 LLC":
+                current_packet_data.append(('sap', get_sap(pretty_packet, protocols)))
 
-        elif current_frame_type == "IEEE 802.3 LLC & SNAP":
-            current_packet_data.append(('pid', get_pid(pretty_packet, protocols)))
+            elif current_frame_type == "IEEE 802.3 LLC & SNAP":
+                current_packet_data.append(('pid', get_pid(pretty_packet, protocols)))
 
-        current_packet_data.append(('hexa_frame', get_hexa_frame(pretty_packet)))
-        current_data = dict(current_packet_data)
-        if current_app_protocol == filter_name:  # Append packet only if app_protocol is same as filtered protocol
-            packets.append(current_data)
-            frame_number += 1
-            results_count += 1
+            current_packet_data.append(('hexa_frame', get_hexa_frame(pretty_packet)))
+            current_data = dict(current_packet_data)
 
-    ipv4_senders = []
-    for sender in unique_senders:
-        ipv4_senders.append({"node": sender.ip_addr, "number_of_sent_packets": sender.packets_sent})
+            if program_mode == "f":
+                if current_app_protocol == filter_name:  # Check if protocol equals filtered protocol
+                    packets.append(current_data)
+                    frame_number += 1
+                    results_count += 1
+            elif program_mode == "a":
+                packets.append(current_data)
+                frame_number += 1
+                results_count += 1
 
-    max_send_packets = []
-    key_function = lambda obj: obj.packets_sent
-    max_packets_sent = max(unique_senders, key=key_function).packets_sent
-    max_objects = [obj for obj in unique_senders if obj.packets_sent == max_packets_sent]
-    for i in max_objects:
-        max_send_packets.append({"ip_addr": i.ip_addr, "packets_sent": i.packets_sent})
+        ipv4_senders = []
+        for sender in unique_senders:
+            ipv4_senders.append({"node": sender.ip_addr, "number_of_sent_packets": sender.packets_sent})
 
-    with open("output.yaml", "w") as file:
-        yaml = YAML()
-        yaml.dump({"filter_name": filter_name}, file)
-        if results_count > 0:
-            yaml.dump(packets, file)
-            yaml.dump({"ipv4_senders": ipv4_senders}, file)
-            yaml.dump({"max_send_packets_by": max_send_packets}, file)
-        else:
-            yaml.dump("No packets found with this protocol!", file)
-    print("\nDone, check output.yaml")
+        max_send_packets = []
+        key_function = lambda obj: obj.packets_sent
+        max_packets_sent = max(unique_senders, key=key_function).packets_sent
+        max_objects = [obj for obj in unique_senders if obj.packets_sent == max_packets_sent]
+        for i in max_objects:
+            max_send_packets.append({"ip_addr": i.ip_addr, "packets_sent": i.packets_sent})
+
+        with open("output.yaml", "w") as file:
+            yaml = YAML()
+            if program_mode == "f":
+                yaml.dump({"filter_name": filter_name}, file)
+            if results_count > 0:
+                yaml.dump(packets, file)
+                yaml.dump({"ipv4_senders": ipv4_senders}, file)
+                yaml.dump({"max_send_packets_by": max_send_packets}, file)
+            else:
+                yaml.dump("No packets found with this protocol!", file)
+        print("\nDone, check output.yaml\n")
 
 
 analyze_packets()
