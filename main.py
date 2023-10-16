@@ -237,37 +237,81 @@ def analyze_file(file_name):  # chata sesh
     return protocols
 
 
+def check_for_complete_communication(communication, complete_communications, current_communications):
+    if "SYN" in communication[0]["flags"] and "SYN" in communication[1]["flags"] and "ACK" in communication[1]["flags"] and "ACK" in communication[2]["flags"]:
+        # Established communication
+        if "RST" in communication[len(communication)-1]["flags"]:
+            # Finished
+            complete_communications.append(communication)
+            current_communications.remove(communication)
+        elif len(communication) > 6:  # Check for finish handshake
+            last_index = len(communication)
+            if "FIN" in communication[last_index - 4]["flags"] and "ACK" in communication[last_index - 3]["flags"] and "FIN" in communication[last_index - 2]["flags"] and "ACK" in communication[last_index - 1]["flags"]:
+                # Finished
+                complete_communications.append(communication)
+                current_communications.remove(communication)
+            elif "FIN" in communication[last_index - 2]["flags"] and "ACK" in communication[last_index - 2]["flags"] and "FIN" in communication[last_index - 1]["flags"] and "ACK" in communication[last_index - 1]["flags"]:
+                complete_communications.append(communication)
+                current_communications.remove(communication)
+    elif "SYN" in communication[0]["flags"] and "SYN" in communication[1]["flags"] and "ACK" in communication[2]["flags"] and "ACK" in communication[3]["flags"]:
+        # Established connection
+        if "RST" in communication[len(communication)-1]["flags"]:
+            # Finished
+            complete_communications.append(communication)
+            current_communications.remove(communication)
+        elif len(communication) > 7:  # Check for finish handshake
+            last_index = len(communication)
+            if "FIN" in communication[last_index - 4]["flags"] and "ACK" in communication[last_index - 3]["flags"] and "FIN" in communication[last_index - 2]["flags"] and "ACK" in communication[last_index - 1]["flags"]:
+                # Finished
+                complete_communications.append(communication)
+                current_communications.remove(communication)
+            elif "FIN" in communication[last_index - 2]["flags"] and "ACK" in communication[last_index - 2]["flags"] and "FIN" in communication[last_index - 1]["flags"] and "ACK" in communication[last_index - 1]["flags"]:
+                complete_communications.append(communication)
+                current_communications.remove(communication)
+
+
 def analyze_packets():
     program_mode = ""
 
     while program_mode != "x":
-        packet_list = scapy.all.rdpcap("test_pcap_files/vzorky_pcap_na_analyzu/eth-4.pcap")  # Change file
+        packet_list = scapy.all.rdpcap("test_pcap_files/vzorky_pcap_na_analyzu/trace-26.pcap")  # Change file
+        complete_communications = []
+        incomplete_communications = [[]]
+        current_communications = [[]]
+        arp_complete_communications = [[]]
+        arp_incomplete_replies = []
+        arp_incomplete_requests = []
         packets = []
+        packets_with_flags = []
         unique_senders = []
         protocols = analyze_file("protocols.txt")
-        is_valid_filter = False
         filter_name = ""
         results_count = 0
+        program_mode = ""
 
-        print("Analyze all packets : 'a'\nFilter by protocol : 'f'\nExit program : 'x'\n")
-        program_mode = input()
+        while program_mode != "f" and program_mode != "a" and program_mode != "x" and program_mode != "arp" and program_mode != "icmp":
+            is_valid_filter = False
+            print("Analyze all packets : 'a'\nFilter by protocol : 'f'\nAnalyze ARP packets : 'arp'\nAnalyze ICMP : 'icmp'\nExit program : 'x'\n")
+            program_mode = input()
 
-        if program_mode == "x":  # Check for Exit program
-            exit()
+            if program_mode == "x":  # Check for Exit program
+                exit()
 
-        if program_mode == "f":
-            while not is_valid_filter:
-                print("Enter filter name : ")
-                filter_name = input()  # Get filter name
+            if program_mode == "f":
+                while not is_valid_filter:
+                    print("Enter filter name \nType 'x' to exit program")
+                    filter_name = input()  # Get filter name
+                    if filter_name == "x":  # Check for Exit program
+                        exit()
 
-                for value in protocols["tcp_protocol"].values():  # Check if this protocol exists
-                    if filter_name == value:
-                        is_valid_filter = True
-                        break
-                if not is_valid_filter:
-                    print("Not an existing protocol!")
-
-        frame_number = 1
+                    for value in protocols["tcp_protocol"].values():  # Check if this protocol exists
+                        if filter_name == value:
+                            is_valid_filter = True
+                            break
+                    if not is_valid_filter:
+                        print("Not an existing protocol!")
+            if program_mode != "f" and program_mode != "a" and program_mode != "x" and program_mode != "arp" and program_mode != "icmp":
+                print("Enter correct input!")
 
         for current_packet_number in range(0, len(packet_list)):
             packet = packet_list[current_packet_number]
@@ -278,7 +322,7 @@ def analyze_packets():
             current_app_protocol = ""
 
             current_packet_data = [
-                ('frame_number', frame_number),
+                ('frame_number', current_packet_number+1),
                 ('pcap_length', get_pcap_length(pretty_packet)),
                 ('medium_length', get_medium_length(get_pcap_length(pretty_packet))),
                 ('frame_type',  current_frame_type),
@@ -319,9 +363,6 @@ def analyze_packets():
                             current_app_protocol = known_port
                             current_packet_data.append(('app_protocol', current_app_protocol))
 
-                        if current_ipv4_protocol == "TCP":  # Flags
-                            print(get_active_flags(pretty_packet))
-
                 elif current_ether_type == "ARP":
                     current_arp_opcode = get_arp_opcode(pretty_packet)
                     current_packet_data.append(('arp_opcode', current_arp_opcode))
@@ -340,12 +381,166 @@ def analyze_packets():
             if program_mode == "f":
                 if current_app_protocol == filter_name:  # Check if protocol equals filtered protocol
                     packets.append(current_data)
-                    frame_number += 1
+                    if current_frame_type == "ETHERNET II" and current_ether_type == "IPv4" and current_ipv4_protocol == "TCP":  # Flags
+                        current_packet_data.append(('flags', get_active_flags(pretty_packet)))
+                        current_data = dict(current_packet_data)
+                        packets_with_flags.append(current_data)
                     results_count += 1
             elif program_mode == "a":
                 packets.append(current_data)
-                frame_number += 1
                 results_count += 1
+            elif program_mode == "arp":
+                if current_frame_type == "ETHERNET II" and current_ether_type == "ARP":
+                    packets.append(current_data)
+                    results_count += 1
+            elif program_mode == "icmp":
+                if current_frame_type == "ETHERNET II" and current_ether_type == "IPv4" and current_ipv4_protocol == "ICMP":
+                    packets.append(current_data)
+                    results_count += 1
+
+        # Analyze ICMP
+        if program_mode == "icmp":
+            icmp_complete_communications = {}
+
+        # Analyze ARP
+        if program_mode == "arp":
+            arp_communications = [[]]
+            for packet in packets:
+                is_unique = True
+                for arp_communication in arp_communications:
+                    if len(arp_communication) > 0:
+                        if packet["arp_opcode"] == "REQUEST":
+                            if packet["dst_ip"] == arp_communication[0]["dst_ip"]:
+                                if packet["arp_opcode"] == arp_communication[len(arp_communication)-1]["arp_opcode"]:
+                                    arp_incomplete_requests.append(packet)
+                                    is_unique = False
+                                    break
+                                else:
+                                    arp_communication.append(packet)
+                                    is_unique = False
+                                    break
+                        elif packet["arp_opcode"] == "REPLY":
+                            if packet["src_ip"] == arp_communication[0]["dst_ip"]:
+                                if packet["arp_opcode"] == arp_communication[len(arp_communication)-1]["arp_opcode"]:
+                                    arp_incomplete_replies.append(packet)
+                                    is_unique = False
+                                    break
+                                elif packet["dst_ip"] == arp_communication[0]["src_ip"]:
+                                    arp_communication.append(packet)
+                                    is_unique = False
+                                    break
+                if is_unique:
+                    if packet["arp_opcode"] == "REQUEST":
+                        arp_communications.append([packet])
+                    else:
+                        arp_incomplete_replies.append(packet)
+            for arp_communication in arp_communications:
+                if len(arp_communication) > 0:
+                    if arp_communication[len(arp_communication)-1]["arp_opcode"] == "REPLY":
+                        arp_complete_communications.append(arp_communication)
+                    else:
+                        incomplete_request = arp_communication[len(arp_communication)-1]
+                        arp_incomplete_requests.append(incomplete_request)
+                        arp_communication.remove(incomplete_request)
+                        if len(arp_communication) > 1:
+                            arp_complete_communications.append(arp_communication)
+
+        # Analyze flags
+        for packet in packets_with_flags:
+            if "SYN" in packet["flags"]:  # If we have SYN
+
+                new_request = True
+                for communication in current_communications:
+                    # If it's a repeat request then the old one is incomplete and this one needs to reset
+                    if len(communication) > 0 and communication[0]["src_ip"] == packet["src_ip"] and communication[0]["dst_ip"] == packet["dst_ip"]:
+                        if communication[0]["src_port"] == packet["src_port"] and communication[0]["dst_port"] == packet["dst_port"]:
+                            incomplete_communications.append(communication[0])
+                            communication[0] = packet
+                            new_request = False  # Not a new request
+                            break
+                    # If it's a reply then we add it
+                    if len(communication) > 0 and communication[0]["src_ip"] == packet["dst_ip"] and communication[0]["dst_ip"] == packet["src_ip"]:
+                        communication.append(packet)
+                        new_request = False  # Not a new request
+                        break
+                if new_request:
+                    new_communication = [packet]
+                    current_communications.append(new_communication)
+            elif "ACK" in packet["flags"]:  # If we have ACK or RST
+
+                for communication in current_communications:
+                    # If we have 2x SYN
+                    if len(communication) > 1:
+                        # If packet was sent by client to server
+                        if communication[0]["src_ip"] == packet["src_ip"] and communication[0]["dst_ip"] == packet["dst_ip"]:
+                            if communication[0]["src_port"] == packet["src_port"] and communication[0]["dst_port"] == packet["dst_port"]:
+                                communication.append(packet)
+                                check_for_complete_communication(communication, complete_communications, current_communications)
+
+                        # If packet was sent by server to client
+                        elif communication[1]["src_ip"] == packet["src_ip"] and communication[1]["dst_ip"] == packet["dst_ip"]:
+                            if communication[1]["src_port"] == packet["src_port"] and communication[1]["dst_port"] == packet["dst_port"]:
+                                communication.append(packet)
+                                check_for_complete_communication(communication, complete_communications, current_communications)
+
+            elif "RST" in packet["flags"]:  # If we have RST
+                for communication in current_communications:
+                    # If is established
+                    if "SYN" in communication[0]["flags"] and "SYN" in communication[1]["flags"] and "ACK" in communication[1]["flags"] and "ACK" in communication[2]["flags"]:
+                        # If packet was sent by client to server
+                        if communication[0]["src_ip"] == packet["src_ip"] and communication[0]["dst_ip"] == packet["dst_ip"]:
+                            if communication[0]["src_port"] == packet["src_port"] and communication[0]["dst_port"] == packet["dst_port"]:
+                                communication.append(packet)
+                                complete_communications.append(communication)
+                                current_communications.remove(communication)
+                        # If packet was sent by server to client
+                        elif communication[1]["src_ip"] == packet["src_ip"] and communication[1]["dst_ip"] == packet["dst_ip"]:
+                            if communication[1]["src_port"] == packet["src_port"] and communication[1]["dst_port"] == packet["dst_port"]:
+                                communication.append(packet)
+                                complete_communications.append(communication)
+                                current_communications.remove(communication)
+                    elif "SYN" in communication[0]["flags"] and "SYN" in communication[1]["flags"] and "ACK" in communication[2]["flags"] and "ACK" in communication[3]["flags"]:
+                        # If packet was sent by client to server
+                        if communication[0]["src_ip"] == packet["src_ip"] and communication[0]["dst_ip"] == packet["dst_ip"]:
+                            if communication[0]["src_port"] == packet["src_port"] and communication[0]["dst_port"] == packet["dst_port"]:
+                                communication.append(packet)
+                                complete_communications.append(communication)
+                                current_communications.remove(communication)
+                        # If packet was sent by server to client
+                        elif communication[1]["src_ip"] == packet["src_ip"] and communication[1]["dst_ip"] == packet["dst_ip"]:
+                            if communication[1]["src_port"] == packet["src_port"] and communication[1]["dst_port"] == packet["dst_port"]:
+                                communication.append(packet)
+                                complete_communications.append(communication)
+                                current_communications.remove(communication)
+                    else:
+                        new_communication = [packet]
+                        incomplete_communications.append(new_communication)
+
+            elif "FIN" in packet["flags"]:  # Everything except ACK, SYN and RST
+
+                for communication in current_communications:
+                    # If communication is established
+                    if "SYN" in communication[0]["flags"] and "SYN" in communication[1]["flags"] and "ACK" in communication[1]["flags"] and "ACK" in communication[2]["flags"]:
+                        # If packet was sent by client to server
+                        if communication[0]["src_ip"] == packet["src_ip"] and communication[0]["dst_ip"] == packet["dst_ip"]:
+                            if communication[0]["src_port"] == packet["src_port"] and communication[0]["dst_port"] == packet["dst_port"]:
+                                communication.append(packet)
+
+                        # If packet was sent by server to client
+                        elif communication[1]["src_ip"] == packet["src_ip"] and communication[1]["dst_ip"] == packet["dst_ip"]:
+                            if communication[1]["src_port"] == packet["src_port"] and communication[1]["dst_port"] == packet["dst_port"]:
+                                communication.append(packet)
+                    elif "SYN" in communication[0]["flags"] and "SYN" in communication[1]["flags"] and "ACK" in communication[2]["flags"] and "ACK" in communication[3]["flags"]:
+                        if "SYN" in communication[0]["flags"] and "SYN" in communication[1]["flags"] and "ACK" in communication[1]["flags"] and "ACK" in communication[2]["flags"]:
+                            # If packet was sent by client to server
+                            if communication[0]["src_ip"] == packet["src_ip"] and communication[0]["dst_ip"] == packet["dst_ip"]:
+                                if communication[0]["src_port"] == packet["src_port"] and communication[0]["dst_port"] == packet["dst_port"]:
+                                    communication.append(packet)
+
+                            # If packet was sent by server to client
+                            elif communication[1]["src_ip"] == packet["src_ip"] and communication[1]["dst_ip"] == packet["dst_ip"]:
+                                if communication[1]["src_port"] == packet["src_port"] and communication[1]["dst_port"] == packet["dst_port"]:
+                                    communication.append(packet)
 
         ipv4_senders = []
         for sender in unique_senders:
@@ -362,12 +557,40 @@ def analyze_packets():
             yaml = YAML()
             if program_mode == "f":
                 yaml.dump({"filter_name": filter_name}, file)
-            if results_count > 0:
-                yaml.dump(packets, file)
-                yaml.dump({"ipv4_senders": ipv4_senders}, file)
-                yaml.dump({"max_send_packets_by": max_send_packets}, file)
-            else:
-                yaml.dump("No packets found with this protocol!", file)
+                if results_count > 0:
+                    for communication in complete_communications:
+                        yaml.dump({f"complete_communication_{complete_communications.index(communication)+1}": communication}, file)
+                    yaml.dump({"incomplete_communication": incomplete_communications[0]}, file)
+                    yaml.dump({"ipv4_senders": ipv4_senders}, file)
+                    yaml.dump({"max_send_packets_by": max_send_packets}, file)
+                else:
+                    yaml.dump("No packets found with this protocol!", file)
+            elif program_mode == "a":
+                if len(packets) > 0:
+                    yaml.dump(packets, file)
+                    yaml.dump({"ipv4_senders": ipv4_senders}, file)
+                    yaml.dump({"max_send_packets_by": max_send_packets}, file)
+                else:
+                    yaml.dump("No packets found!", file)
+            elif program_mode == "arp":
+                if len(arp_complete_communications) > 0:
+                    arp_complete_communications.pop(0)
+                    for arp_communication in arp_complete_communications:
+                        yaml.dump({f"complete_communication_{arp_complete_communications.index(arp_communication) + 1}": arp_communication}, file)
+                arp_incomplete = []
+                if len(arp_incomplete_requests) > 0:
+                    arp_incomplete.append(arp_incomplete_requests)
+                if len(arp_incomplete_replies) > 0:
+                    arp_incomplete.append(arp_incomplete_requests)
+                for i in arp_incomplete:
+                    yaml.dump({f"partial_comms_{arp_incomplete.index(i)+1}": i}, file)
+                if not len(arp_complete_communications) > 0 and not len(arp_incomplete_requests) > 0 and not len(arp_incomplete_replies) > 0:
+                    yaml.dump("No packets found!", file)
+            elif program_mode == "icmp":
+                if len(packets) > 0:
+                    yaml.dump(packets, file)
+                else:
+                    yaml.dump("No packets found!", file)
         print("\nDone, check output.yaml\n")
 
 
