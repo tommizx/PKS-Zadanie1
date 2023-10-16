@@ -207,6 +207,30 @@ def get_active_flags(pretty_packet):
     return list_of_active_flags
 
 
+def get_icmp_type(pretty_packet):
+    ihl_bytes = pretty_packet[29:30]
+    ip_header_length = int(ihl_bytes) * 4
+    icmp_start = ip_header_length*2 + 28
+    if pretty_packet[icmp_start:icmp_start+2] == "08":
+        return "ECHO REQUEST"
+    elif pretty_packet[icmp_start:icmp_start+2] == "00":
+        return "ECHO REPLY"
+
+
+def get_icmp_id(pretty_packet):
+    ihl_bytes = pretty_packet[29:30]
+    ip_header_length = int(ihl_bytes) * 4
+    icmp_start = ip_header_length * 2 + 28
+    return int(pretty_packet[icmp_start + 8:icmp_start + 12], 16)
+
+
+def get_icmp_seq(pretty_packet):
+    ihl_bytes = pretty_packet[29:30]
+    ip_header_length = int(ihl_bytes) * 4
+    icmp_start = ip_header_length * 2 + 28
+    return int(pretty_packet[icmp_start + 12:icmp_start + 16], 16)
+
+
 def is_port_known(src_port, dst_port, protocols, ipv4_protocol):
     if ipv4_protocol == "TCP":
         for protocol_type, protocol_value in protocols["tcp_protocol"].items():
@@ -220,21 +244,19 @@ def is_port_known(src_port, dst_port, protocols, ipv4_protocol):
         return
 
 
-def analyze_file(file_name):  # chata sesh
-    protocols = {}
+def analyze_file(file_name):
+    content = {}
     with open(file_name, 'r') as file:
-        lines = file.readlines()
+        rows = file.readlines()
         current_key = None
-        for line in lines:
-            if line.strip() and not line.startswith(" "):
-                # This line contains a new section identifier
-                current_key = line.strip()[:-1]  # Remove the trailing colon
-                protocols[current_key] = {}
-            elif line.startswith("  ") and current_key:
-                # This line contains a mapping for the current section
-                key, value = map(str.strip, line.strip().split(":"))
-                protocols[current_key][key] = value
-    return protocols
+        for row in rows:
+            if row.strip() and not row.startswith(" "):
+                current_key = row.strip()[:-1]
+                content[current_key] = {}
+            elif row.startswith("  ") and current_key:
+                key, value = map(str.strip, row.strip().split(":"))
+                content[current_key][key] = value
+    return content
 
 
 def check_for_complete_communication(communication, complete_communications, current_communications):
@@ -274,13 +296,17 @@ def analyze_packets():
     program_mode = ""
 
     while program_mode != "x":
-        packet_list = scapy.all.rdpcap("test_pcap_files/vzorky_pcap_na_analyzu/trace-26.pcap")  # Change file
+        file_name = "trace-26.pcap"  # Change file
+        packet_list = scapy.all.rdpcap(f"test_pcap_files/vzorky_pcap_na_analyzu/{file_name}")
         complete_communications = []
         incomplete_communications = [[]]
         current_communications = [[]]
         arp_complete_communications = [[]]
         arp_incomplete_replies = []
         arp_incomplete_requests = []
+        icmp_incomplete_requests = []
+        icmp_incomplete_replies = []
+        icmp_communications = [[]]
         packets = []
         packets_with_flags = []
         unique_senders = []
@@ -363,6 +389,15 @@ def analyze_packets():
                             current_app_protocol = known_port
                             current_packet_data.append(('app_protocol', current_app_protocol))
 
+                    if current_ipv4_protocol == "ICMP":
+                        current_icmp_type = get_icmp_type(pretty_packet)
+                        current_icmp_id = get_icmp_id(pretty_packet)
+                        current_icmp_seq = get_icmp_seq(pretty_packet)
+
+                        current_packet_data.append(('icmp_type', current_icmp_type))
+                        current_packet_data.append(('icmp_id', current_icmp_id))
+                        current_packet_data.append(('icmp_seq', current_icmp_seq))
+
                 elif current_ether_type == "ARP":
                     current_arp_opcode = get_arp_opcode(pretty_packet)
                     current_packet_data.append(('arp_opcode', current_arp_opcode))
@@ -400,7 +435,42 @@ def analyze_packets():
 
         # Analyze ICMP
         if program_mode == "icmp":
-            icmp_complete_communications = {}
+            icmp_requests = []
+            icmp_replies = []
+            for packet in packets:
+                if packet["icmp_type"] == "ECHO REQUEST":
+                    icmp_requests.append(packet)
+                elif packet["icmp_type"] == "ECHO REPLY":
+                    icmp_replies.append(packet)
+            if len(icmp_replies) == 0 or len(icmp_requests) == 0:
+                if len(icmp_replies) == 0:
+                    for request in icmp_requests:
+                        icmp_incomplete_requests.append(request)
+                elif len(icmp_requests) == 0:
+                    for reply in icmp_replies:
+                        icmp_incomplete_replies.append(reply)
+
+            for reply in icmp_replies:
+                for request in icmp_requests:
+                    # Find the pair
+                    if reply["src_ip"] == request["dst_ip"] and reply["dst_ip"] == request["src_ip"] and \
+                     reply["icmp_id"] == request["icmp_id"] and reply["icmp_seq"] == request["icmp_seq"]:
+                        is_new_pair = True
+                        for comm in icmp_communications:
+                            if len(comm) > 0:
+                                if comm[0]["src_ip"] == request["src_ip"] and comm[0]["dst_ip"] == request["dst_ip"] and \
+                                 comm[0]["icmp_id"] == request["icmp_id"]:
+                                    comm.append(request)
+                                    comm.append(reply)
+                                    icmp_requests.remove(request)
+                                    icmp_replies.remove(reply)
+                                    is_new_pair = False
+                                    break
+                        if is_new_pair:
+                            icmp_communications.append([request, reply])
+                            icmp_requests.remove(request)
+                            icmp_replies.remove(reply)
+            icmp_communications.pop(0)
 
         # Analyze ARP
         if program_mode == "arp":
@@ -555,6 +625,8 @@ def analyze_packets():
 
         with open("output.yaml", "w") as file:
             yaml = YAML()
+            yaml.dump({"name": "PKS2023/24"}, file)
+            yaml.dump({"pcap_name": file_name}, file)
             if program_mode == "f":
                 yaml.dump({"filter_name": filter_name}, file)
                 if results_count > 0:
@@ -573,6 +645,7 @@ def analyze_packets():
                 else:
                     yaml.dump("No packets found!", file)
             elif program_mode == "arp":
+                yaml.dump({"filter_name": "ARP"}, file)
                 if len(arp_complete_communications) > 0:
                     arp_complete_communications.pop(0)
                     for arp_communication in arp_complete_communications:
@@ -587,10 +660,20 @@ def analyze_packets():
                 if not len(arp_complete_communications) > 0 and not len(arp_incomplete_requests) > 0 and not len(arp_incomplete_replies) > 0:
                     yaml.dump("No packets found!", file)
             elif program_mode == "icmp":
-                if len(packets) > 0:
-                    yaml.dump(packets, file)
-                else:
-                    yaml.dump("No packets found!", file)
+                yaml.dump({"filter_name": "ICMP"}, file)
+                if len(icmp_communications) > 0:
+                    complete_comms = []
+                    for comm in icmp_communications:
+                        complete_comm = [{"number_comm": icmp_communications.index(comm) + 1}, {"packets": comm}]
+                        complete_comms.append(complete_comm)
+                    yaml.dump({"complete_comms": complete_comms}, file)
+                partial_comms = []
+                for comm in icmp_incomplete_requests:
+                    partial_comms.append(comm)
+                for comm in icmp_incomplete_replies:
+                    partial_comms.append(comm)
+                if len(partial_comms) > 0:
+                    yaml.dump({"partial_comms": partial_comms}, file)
         print("\nDone, check output.yaml\n")
 
 
